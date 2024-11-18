@@ -32,12 +32,16 @@ from fire.views import HomePageView, ChartView, PieCountbySeverity
 from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth
 from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth,
 MultilineIncidentTop3Country
+from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth,
+MultilineIncidentTop3Country, multipleBarbySeverity
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', views.HomePageView.as_view(), name='home'),
     path('dashboard_chart', ChartView.as_view(), name='dashboard-chart'),
     path('chart/', PieCountbySeverity, name='chart'),
     path('multilineChart/', MultilineIncidentTop3Country, name='chart'),1073
+    path('multiBarChart/', multipleBarbySeverity, name='chart'),
 
     # Organization
     path('organization_list', OrganizationList.as_view(), name='organization-list'),
