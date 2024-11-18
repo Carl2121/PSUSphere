@@ -29,6 +29,7 @@ from studentorg import views
 from django.contrib.auth import views as auth_views
 from fire.views import HomePageView, ChartView
 from fire.views import HomePageView, ChartView, PieCountbySeverity
+from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', views.HomePageView.as_view(), name='home'),
