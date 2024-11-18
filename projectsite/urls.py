@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, re_path
 from studentorg.views import (
@@ -26,10 +27,11 @@ from studentorg.views import (
 )
 from studentorg import views
 from django.contrib.auth import views as auth_views
-
+from fire.views import HomePageView, ChartView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', views.HomePageView.as_view(), name='home'),
+    path('dashboard_chart', ChartView.as_view(), name='dashboard-chart'),
 
     # Organization
     path('organization_list', OrganizationList.as_view(), name='organization-list'),
