@@ -24,7 +24,7 @@ from studentorg.views import (
     CollegeList, CollegeCreateView, CollegeUpdateView, CollegeDeleteView,
     ProgramList, ProgramCreateView, ProgramUpdateView, ProgramDeleteView,
     RadarChartOrgParticipation, BubbleChartStudentPrograms, HorizontalBarTopOrganizations,
-    StackedBarOrgMemberTrends, DoughnutProgramDistribution, exampleBarChartData
+    StackedBarOrgMemberTrends, DoughnutProgramDistribution
 )
 from studentorg import views
 from django.contrib.auth import views as auth_views

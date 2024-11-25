@@ -3,25 +3,27 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from studentorg.models import Organization, OrgMember, Student, College, Program
 from studentorg.forms import OrganizationForm, OrgMemberForm, StudentForm, CollegeForm, ProgramForm
-from django.urls import reverse_lazy 
-from django.utils.decorators import method_decorator 
-from django.contrib.auth.decorators import login_required 
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 from typing import Any
 from django.db.models.query import QuerySet
-from django.db.models import Q 
+from django.db.models import Q
 
 from django.db import connection
 from django.http import JsonResponse
 from django.db.models.functions import ExtractMonth
 from django.db.models import Count
-from datetime import datetime 
+from datetime import datetime
+from django.contrib import messages
+
 
 @method_decorator(login_required, name='dispatch')
 class HomePageView(ListView):
     model = Organization
     context_object_name = 'home'
     template_name = "home.html"
-    paginate_by = 5 
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,9 +33,11 @@ class HomePageView(ListView):
         qs = super().get_queryset(*args, **kwargs)
         if self.request.GET.get("q") != None:
             query = self.request.GET.get('q')
-            qs = qs.filter(Q(name__icontains=query) | Q(description__icontains=query))
+            qs = qs.filter(Q(name__icontains=query) |
+                           Q(description__icontains=query))
         return qs
-     
+
+
 def PieCountbySeverity(request):
     query = '''
     SELECT severity_level, COUNT(*) as count
@@ -52,6 +56,7 @@ def PieCountbySeverity(request):
 
     return JsonResponse(data)
 
+
 def LineCountbyMonth(request):
     current_year = datetime.now().year
     result = {month: 0 for month in range(1, 13)}
@@ -69,8 +74,9 @@ def LineCountbyMonth(request):
 
     result_with_month_names = {
         month_names[int(month)]: count for month, count in result.items()}
-    
+
     return JsonResponse(result_with_month_names)
+
 
 def MultilineIncidentTop3Country(request):
     query = '''
@@ -130,6 +136,7 @@ def MultilineIncidentTop3Country(request):
 
     return JsonResponse(result)
 
+
 def multipleBarbySeverity(request):
     query = '''
     SELECT
@@ -163,6 +170,7 @@ def multipleBarbySeverity(request):
 
     return JsonResponse(result)
 
+
 def RadarChartOrgParticipation(request):
     query = '''
     SELECT c.college_name, COUNT(DISTINCT o.id) as org_count
@@ -172,7 +180,7 @@ def RadarChartOrgParticipation(request):
     ORDER BY org_count DESC
     LIMIT 7
     '''
-    
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -184,8 +192,9 @@ def RadarChartOrgParticipation(request):
         'labels': [row[0] for row in rows],
         'values': [row[1] for row in rows]
     }
-    
+
     return JsonResponse(data)
+
 
 def BubbleChartStudentPrograms(request):
     query = '''
@@ -199,7 +208,7 @@ def BubbleChartStudentPrograms(request):
     ORDER BY student_count DESC
     LIMIT 10
     '''
-    
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -209,8 +218,9 @@ def BubbleChartStudentPrograms(request):
         'student_counts': [row[1] for row in rows],
         'org_memberships': [row[2] for row in rows]
     }
-    
+
     return JsonResponse(data)
+
 
 def HorizontalBarTopOrganizations(request):
     query = '''
@@ -221,7 +231,7 @@ def HorizontalBarTopOrganizations(request):
     ORDER BY member_count DESC
     LIMIT 5
     '''
-    
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -230,8 +240,9 @@ def HorizontalBarTopOrganizations(request):
         'labels': [row[0] for row in rows],
         'member_counts': [row[1] for row in rows]
     }
-    
+
     return JsonResponse(data)
+
 
 def StackedBarOrgMemberTrends(request):
     query = '''
@@ -246,7 +257,7 @@ def StackedBarOrgMemberTrends(request):
     GROUP BY semester, year
     ORDER BY year, semester
     '''
-    
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -255,8 +266,9 @@ def StackedBarOrgMemberTrends(request):
         'labels': [f"{row[1]} {row[0]}" for row in rows],
         'member_counts': [row[2] for row in rows]
     }
-    
+
     return JsonResponse(data)
+
 
 def DoughnutProgramDistribution(request):
     query = '''
@@ -266,7 +278,7 @@ def DoughnutProgramDistribution(request):
     GROUP BY c.college_name
     ORDER BY program_count DESC
     '''
-    
+
     with connection.cursor() as cursor:
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -275,25 +287,9 @@ def DoughnutProgramDistribution(request):
         'labels': [row[0] for row in rows],
         'program_counts': [row[1] for row in rows]
     }
-    
-    return JsonResponse(data)
-def exampleBarChartData(request):
-    query = """
-    SELECT category, COUNT(*) as count
-    FROM example_table
-    GROUP BY category
-    """
-    
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        rows = cursor.fetchall()
 
-    data = {
-        'labels': [row[0] for row in rows],
-        'values': [row[1] for row in rows]
-    }
-    
     return JsonResponse(data)
+
 
 class OrganizationList(ListView):
     model = Organization
@@ -305,8 +301,10 @@ class OrganizationList(ListView):
         qs = super().get_queryset(*args, **kwargs)
         if self.request.GET.get("q") != None:
             query = self.request.GET.get('q')
-            qs = qs.filter(Q(name__icontains=query) | Q(description__icontains=query))
+            qs = qs.filter(Q(name__icontains=query) |
+                           Q(description__icontains=query))
         return qs
+
 
 class OrganizationCreateView(CreateView):
     model = Organization
@@ -314,19 +312,42 @@ class OrganizationCreateView(CreateView):
     template_name = 'organization/org_add.html'
     success_url = reverse_lazy('organization-list')
 
+    def form_valid(self, form):
+        organization_name = form.instance.name
+        messages.success(self.request, f'{organization_name} has been successfully added.')
+        return super().form_valid(form)
+
+
 class OrganizationUpdateView(UpdateView):
     model = Organization
     form_class = OrganizationForm
-    template_name = 'organization/org_edit.html' 
+    template_name = 'organization/org_edit.html'
     success_url = reverse_lazy('organization-list')
+
+    def form_valid(self, form):
+        organization_name = form.instance.name
+        messages.success(self.request, f'{organization_name} has been successfully updated.')
+        return super().form_valid(form)
+
 
 class OrganizationDeleteView(DeleteView):
     model = Organization
     template_name = 'organization/org_del.html'
-    success_url = reverse_lazy('organization-list') 
+    success_url = reverse_lazy('organization-list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully deleted.')
+        return super().form_valid(form)
+
 
 # OrgMember Views
+
+
 class OrgMemberList(ListView):
+    model = OrgMember
+    context_object_name = 'orgmember'
+    template_name = 'orgmember/orgmember_list.html'
+    paginate_by = 5
     model = OrgMember
     context_object_name = 'orgmember'
     template_name = 'orgmember/orgmember_list.html'
@@ -343,11 +364,18 @@ class OrgMemberList(ListView):
             )
         return qs
 
+
 class OrgMemberCreateView(CreateView):
     model = OrgMember
     form_class = OrgMemberForm
     template_name = 'orgmember/orgmember_add.html'
     success_url = reverse_lazy('orgmember-list')
+
+    def form_valid(self, form):
+        orgmember = form.instance
+        messages.success(self.request, f'{orgmember} has been successfully added.')
+        return super().form_valid(form)
+
 
 class OrgMemberUpdateView(UpdateView):
     model = OrgMember
@@ -355,12 +383,25 @@ class OrgMemberUpdateView(UpdateView):
     template_name = 'orgmember/orgmember_edit.html'
     success_url = reverse_lazy('orgmember-list')
 
+    def form_valid(self, form):
+        orgmember = form.instance
+        messages.success(self.request, f'{orgmember} has been successfully updated.')
+        return super().form_valid(form)
+
+
 class OrgMemberDeleteView(DeleteView):
     model = OrgMember
     template_name = 'orgmember/orgmember_del.html'
     success_url = reverse_lazy('orgmember-list')
 
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully deleted.')
+        return super().form_valid(form)
+
+
 # Student Views
+
+
 class StudentList(ListView):
     model = Student
     context_object_name = 'student'
@@ -379,24 +420,51 @@ class StudentList(ListView):
             )
         return queryset
 
+
 class StudentCreateView(CreateView):
     model = Student
     form_class = StudentForm
     template_name = 'student/student_add.html'
     success_url = reverse_lazy('student-list')
 
+    def form_valid(self, form):
+        student_name = form.instance
+        messages.success(self.request, f'{student_name} has been successfully added.')
+        return super().form_valid(form)
+
+
 class StudentUpdateView(UpdateView):
     model = Student
     form_class = StudentForm
     template_name = 'student/student_edit.html'
     success_url = reverse_lazy('student-list')
+    model = Student
+    form_class = StudentForm
+    template_name = 'student/student_edit.html'
+    success_url = reverse_lazy('student-list')
+
+    def form_valid(self, form):
+        student_name = form.instance
+        messages.success(self.request, f'{student_name} has been successfully updated.')
+        return super().form_valid(form)
+
 
 class StudentDeleteView(DeleteView):
     model = Student
     template_name = 'student/student_del.html'
     success_url = reverse_lazy('student-list')
+    model = Student
+    template_name = 'student/student_del.html'
+    success_url = reverse_lazy('student-list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully deleted.')
+        return super().form_valid(form)
+
 
 # College Views
+
+
 class CollegeList(ListView):
     model = College
     context_object_name = 'college'
@@ -410,24 +478,51 @@ class CollegeList(ListView):
             qs = qs.filter(Q(college_name__icontains=query))
         return qs
 
+
 class CollegeCreateView(CreateView):
     model = College
     form_class = CollegeForm
     template_name = 'college/college_add.html'
     success_url = reverse_lazy('college-list')
+    model = College
+    form_class = CollegeForm
+    template_name = 'college/college_add.html'
+    success_url = reverse_lazy('college-list')
+
+    def form_valid(self, form):
+        college_name = form.instance.college_name
+        messages.success(self.request, f'{college_name} has been successfully added.')
+        return super().form_valid(form)
+
 
 class CollegeUpdateView(UpdateView):
     model = College
     form_class = CollegeForm
     template_name = 'college/college_edit.html'
     success_url = reverse_lazy('college-list')
+    model = College
+    form_class = CollegeForm
+    template_name = 'college/college_edit.html'
+    success_url = reverse_lazy('college-list')
+
+    def form_valid(self, form):
+        college_name = form.instance.college_name
+        messages.success(self.request, f'{college_name} has been successfully updated.')
+        return super().form_valid(form)
+
 
 class CollegeDeleteView(DeleteView):
     model = College
     template_name = 'college/college_del.html'
     success_url = reverse_lazy('college-list')
 
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully deleted.')
+        return super().form_valid(form)
+
 # Program Views
+
+
 class ProgramList(ListView):
     model = Program
     context_object_name = 'program'
@@ -441,11 +536,18 @@ class ProgramList(ListView):
             qs = qs.filter(Q(prog_name__icontains=query))
         return qs
 
+
 class ProgramCreateView(CreateView):
     model = Program
     form_class = ProgramForm
     template_name = 'program/program_add.html'
     success_url = reverse_lazy('program-list')
+
+    def form_valid(self, form):
+        program_name = form.instance.prog_name
+        messages.success(self.request, f'{program_name} has been successfully added.')
+        return super().form_valid(form)
+
 
 class ProgramUpdateView(UpdateView):
     model = Program
@@ -453,7 +555,17 @@ class ProgramUpdateView(UpdateView):
     template_name = 'program/program_edit.html'
     success_url = reverse_lazy('program-list')
 
+    def form_valid(self, form):
+        prog_name = form.instance.prog_name
+        messages.success(self.request, f'{prog_name} has been successfully updated.')
+        return super().form_valid(form)
+
+
 class ProgramDeleteView(DeleteView):
     model = Program
     template_name = 'program/program_del.html'
     success_url = reverse_lazy('program-list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Successfully deleted.')
+        return super().form_valid(form)
