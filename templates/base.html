@@ -110,7 +110,7 @@
 									<div class="user-box">
 										<div class="u-img"><img src="{% static 'img/profile.jpg' %}" alt="user"></div>
 										<div class="u-text">
-											<h4>Carlospy </h4>
+											<h4>Carlos</h4>
 											<p class="text-muted">hello@themekita.com</p><a href="profile.html" class="btn btn-rounded btn-danger btn-sm">View Profile</a></div>
 										</div>
 									</li>
@@ -121,7 +121,10 @@
 									<div class="dropdown-divider"></div>
 									<a class="dropdown-item" href="#"><i class="ti-settings"></i> Account Setting</a>
 									<div class="dropdown-divider"></div>
-									<a class="dropdown-item" href="{% url 'logout' %}"><i class="fa fa-power-off"></i> Logout</a>
+									<form class="dropdown-item" method="post" action="{% url 'logout' %}">
+										{% csrf_token %}
+										<button class="btn btn-link m-0 p-0 text-danger" type="submit"><i class="fa fa-power-off"></i> Logout</button>
+									</form>
 								</ul>
 								<!-- /.dropdown-user -->
 							</li>
@@ -207,8 +210,7 @@
 				</div>
 			</div>
 			<div class="main-panel">
-						{% block content %}
-						{% endblock %}
+						{% block content %}{% endblock %}
 				<footer class="footer">
 					<div class="container-fluid">
 						<nav class="pull-left">
@@ -249,6 +251,7 @@
 					</button>
 				</div>
 				<div class="modal-body text-center">									
+
 					<p>Currently the pro version of the <b>Ready Dashboard</b> Bootstrap is in progress development</p>
 					<p>
 					<b>We'll let you know when it's done</b></p>
@@ -264,6 +267,9 @@
 <script src="{% static 'js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/core/popper.min.js' %}"></script>
 <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+<!-- Add Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block chart %}{% endblock %}
 <script src="{% static 'js/plugin/chartist/chartist.min.js' %}"></script>
 <script src="{% static 'js/plugin/chartist/plugin/chartist-plugin-tooltip.min.js' %}"></script>
 <script src="{% static 'js/plugin/bootstrap-notify/bootstrap-notify.min.js' %}"></script>
